@@ -15,20 +15,16 @@ def calculate_iou(prediction_box, gt_box):
         returns:
             float: value of the intersection of union for the two boxes.
     """
-    # YOUR CODE HERE
-
-    # Compute intersection:  
-    # IoU = Area of overlap / Area of union
-
+    
     # Area of overlap = Area of the "inner" rectangle given by the boxes
     area_of_overlap = (np.min(prediction_box[2], gt_box[2]) - np.max(prediction_box[0], gt_box[0])) * (np.min(prediction_box[3], gt_box[3]) - np.max(prediction_box[1], gt_box[1]))
     
     # Area of union = The area of both boxes minus the overlap
     area_of_union = (prediction_box[2] - prediction_box[0]) * (prediction_box[3] - prediction_box[1]) + (gt_box[2] - gt_box[0]) * (gt_box[3] - gt_box[1]) - area_of_overlap
 
+    # IoU = Area of overlap / Area of union
     iou = area_of_overlap / area_of_union
 
-    # Compute union
     iou = 0
     assert iou >= 0 and iou <= 1
     return iou
