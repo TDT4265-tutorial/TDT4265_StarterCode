@@ -1,3 +1,4 @@
+from logging import raiseExceptions
 import numpy as np
 import matplotlib.pyplot as plt
 from tools import read_predicted_boxes, read_ground_truth_boxes
@@ -43,8 +44,8 @@ def calculate_precision(num_tp, num_fp, num_fn):
     Returns:
         float: value of precision
     """
-    
-    if num_tp + num_fp == 0: 
+   
+    if num_tp + num_fp == 0:
         return 1
     else:
         return num_tp / (num_tp + num_fp)
@@ -60,7 +61,11 @@ def calculate_recall(num_tp, num_fp, num_fn):
     Returns:
         float: value of recall
     """
-    raise NotImplementedError
+
+    if num_tp + num_fn == 0:
+        return 0
+    else:
+        return num_tp / (num_tp + num_fn)
 
 
 def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
@@ -90,7 +95,7 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
 
     # Find all matches with the highest IoU threshold
 
-
+    
 
     return np.array([]), np.array([])
 
