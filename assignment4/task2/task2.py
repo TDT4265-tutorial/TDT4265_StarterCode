@@ -17,16 +17,18 @@ def calculate_iou(prediction_box, gt_box):
     """
     
     # Area of overlap = Area of the "inner" rectangle given by the boxes
-    area_of_overlap = (np.min(prediction_box[2], gt_box[2]) - np.max(prediction_box[0], gt_box[0])) * (np.min(prediction_box[3], gt_box[3]) - np.max(prediction_box[1], gt_box[1]))
+    area_of_overlap = (np.minimum(prediction_box[2], gt_box[2]) - np.maximum(prediction_box[0], gt_box[0])) \
+        * (np.minimum(prediction_box[3], gt_box[3]) - np.maximum(prediction_box[1], gt_box[1]))
     
     # Area of union = The area of both boxes minus the overlap
-    area_of_union = (prediction_box[2] - prediction_box[0]) * (prediction_box[3] - prediction_box[1]) + (gt_box[2] - gt_box[0]) * (gt_box[3] - gt_box[1]) - area_of_overlap
+    area_of_union = (prediction_box[2] - prediction_box[0]) * (prediction_box[3] - prediction_box[1]) \
+        + (gt_box[2] - gt_box[0]) * (gt_box[3] - gt_box[1]) \
+        - area_of_overlap
 
     # IoU = Area of overlap / Area of union
-    iou = area_of_overlap / area_of_union
+    iou = np.maximum(area_of_overlap / area_of_union, 0)
 
-    iou = 0
-    assert iou >= 0 and iou <= 1
+    assert iou >= 0 and iou <= 1, "iou not between 0 and 1" 
     return iou
 
 
