@@ -90,14 +90,28 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
     """
     # Find all possible matches with a IoU >= iou threshold
 
+    prediction_boxes_matched = np.array([])
+    gt_boxes_matched = np.array([])
+    ious = np.array([])
 
-    # Sort all matches on IoU in descending order
+    for gt_box in gt_boxes:
 
-    # Find all matches with the highest IoU threshold
+        for pred_box in prediction_boxes:
+            # Finding IoU for all prediction boxes with the specified gt_box
+            ious = np.append(ious, calculate_iou(pred_box, gt_box))
+        
+        # Checking if the maximum value of the IoU list is bigger than the treshold
+        if(np.amax(ious) >= iou_threshold):
+            gt_boxes_matched = np.append(gt_boxes_matched, gt_box)
+            prediction_boxes_matched = np.append(prediction_boxes_matched, prediction_boxes[np.argmax(ious)])
+            prediction_boxes = np.delete(prediction_boxes, np.argmax(ious), axis=0)
 
-    
+        ious = np.array([])
 
-    return np.array([]), np.array([])
+    print('Prediction_boxes:', prediction_boxes)
+    print('Prediction_boxes_matched:', prediction_boxes_matched)
+    print('Gt_boxes_matched:', gt_boxes_matched)
+    return prediction_boxes_matched, gt_boxes_matched
 
 
 def calculate_individual_image_result(prediction_boxes, gt_boxes, iou_threshold):
