@@ -1,3 +1,4 @@
+from lib2to3.pytree import _Results
 from logging import raiseExceptions
 import numpy as np
 import matplotlib.pyplot as plt
@@ -137,7 +138,23 @@ def calculate_individual_image_result(prediction_boxes, gt_boxes, iou_threshold)
             {"true_pos": int, "false_pos": int, false_neg": int}
     """
 
-    raise NotImplementedError
+    # True positives = prediction boxes that are over the treshold len(prediction_boxes_matched)
+    # False positives = prediction boxes that are not over the threshold
+    # False negatives = 
+
+    result = {
+        'true_pos': 0,
+        'false_pos': 0,
+        'false_neg': 0
+    }
+
+    res1, res2 = get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold)
+
+    result['true_pos'] = len(res1)
+    result['false_pos'] = len(prediction_boxes) - len(res1)
+    # result['false_neg'] = 
+
+    return result
 
 
 def calculate_precision_recall_all_images(
