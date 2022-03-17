@@ -1,5 +1,3 @@
-from lib2to3.pytree import _Results
-from logging import raiseExceptions
 import numpy as np
 import matplotlib.pyplot as plt
 from tools import read_predicted_boxes, read_ground_truth_boxes
