@@ -288,7 +288,25 @@ def calculate_mean_average_precision(precisions, recalls):
     # Calculate the mean average precision given these recall levels.
     recall_levels = np.linspace(0, 1.0, 11)
     # YOUR CODE HERE
-    average_precision = 0
+    average_precision = []
+    precision_recall_over_thershold = []
+
+    for recall_level in recall_levels:
+
+        for precision, recall in zip(precisions, recalls):
+
+            if recall >= recall_level:
+                precision_recall_over_thershold.append(precision)
+        
+        if len(precision_recall_over_thershold) > 0:
+            average_precision.append(max(precision_recall_over_thershold))
+        else:
+            average_precision.append(0)
+
+        precision_recall_over_thershold = []
+    
+    average_precision = np.mean(average_precision)
+    # print('average_precision:', average_precision)
     return average_precision
 
 
