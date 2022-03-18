@@ -1,4 +1,5 @@
 import torch
+from torch import nn
 from typing import Tuple, List
 
 
@@ -20,6 +21,57 @@ class BasicModel(torch.nn.Module):
         super().__init__()
         self.out_channels = output_channels
         self.output_feature_shape = output_feature_sizes
+
+        self.model = nn.Sequential(
+
+            # Resolution 38x38
+            nn.Conv2d(image_channels, 32, 3, 1, 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(32, 64, 3, 1, 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(64, 64, 3, 1, 1),
+            nn.ReLU(),
+            nn.Conv2d(64, output_channels[0], 3, 2, 1),
+            nn.ReLU(),
+
+            # Resolution 19x19
+            nn.ReLU(),
+            nn.Conv2d(output_channels[0], 128, 3, 1, 1),
+            nn.ReLU(),
+            nn.Conv2d(128, output_channels[1], 3, 2, 1),
+            nn.ReLU(),
+
+            # Resolution 10x10
+            nn.ReLU(),
+            nn.Conv2d(output_channels[1], 256, 3, 1, 1),
+            nn.ReLU(),
+            nn.Conv2d(256, output_channels[2], 3, 2, 1),
+            nn.ReLU(),
+
+            # Resolution 5x5
+            nn.ReLU(),
+            nn.Conv2d(output_channels[2], 128, 3, 1, 1),
+            nn.ReLU(),
+            nn.Conv2d(128, output_channels[3], 3, 2, 1),
+            nn.ReLU(),
+
+            # Resolution 3x3
+            nn.ReLU(),
+            nn.Conv2d(output_channels[3], 128, 3, 1, 1),
+            nn.ReLU(),
+            nn.Conv2d(128, output_channels[4], 3, 2, 1),
+            nn.ReLU(),
+
+            # Resolution 1x1
+            nn.ReLU(),
+            nn.Conv2d(output_channels[4], 128, 3, 1, 1),
+            nn.ReLU(),
+            nn.Conv2d(128, output_channels[5], 3, 1, 0),
+            nn.ReLU()
+        )
+
 
     def forward(self, x):
         """
