@@ -1,9 +1,10 @@
+from __future__ import annotations
 import torch
 import torchvision
 from torch.optim.lr_scheduler import MultiStepLR, LinearLR
 from ssd.modeling import SSD300, SSDMultiboxLoss, backbones, AnchorBoxes
 from tops.config import LazyCall as L
-from ssd.data.mnist import MNISTDetectionDataset
+from ssd.data.tdt4265 import TDT4265Dataset
 from ssd import utils
 from ssd.data.transforms import Normalize, ToTensor, GroundTruthBoxesToAnchors
 from .utils import get_dataset_dir, get_output_dir
@@ -16,20 +17,20 @@ train = dict(
     seed=0,
     epochs=50,
     _output_dir=get_output_dir(),
-    imshape=(300, 300),
+    imshape=(128, 1024),
     image_channels=3
 )
 
 anchors = L(AnchorBoxes)(
-    feature_sizes=[[38, 38], [19, 19], [10, 10], [5, 5], [3, 3], [1, 1]],
+    feature_sizes=[[32, 256], [16, 128], [8, 64], [4, 32], [2, 16], [1, 8]],
     # Strides is the number of pixels (in image space) between each spatial position in the feature map
-    strides=[[8, 8], [16, 16], [32, 32], [64, 64], [100, 100], [300, 300]],
-    min_sizes=[[30, 30], [60, 60], [111, 111], [162, 162], [213, 213], [264, 264], [315, 315]],
+    strides=[[4, 4], [8, 8], [16, 16], [32, 32], [64, 64], [128, 128]],
+    min_sizes=[[16, 16], [32, 32], [48, 48], [64, 64], [86, 86], [128, 128], [128, 400]],
     # aspect ratio is defined per feature map (first index is largest feature map (38x38))
     # aspect ratio is used to define two boxes per element in the list.
     # if ratio=[2], boxes will be created with ratio 1:2 and 2:1
     # Number of boxes per location is in total 2 + 2 per aspect ratio
-    aspect_ratios=[[2], [2, 3], [2, 3], [2, 3], [2], [2]],
+    aspect_ratios=[[2, 3], [2, 3], [2, 3], [2, 3], [2], [2]],
     image_shape="${train.imshape}",
     scale_center_variance=0.1,
     scale_size_variance=0.2
@@ -59,16 +60,15 @@ schedulers = dict(
     multistep=L(MultiStepLR)(milestones=[], gamma=0.1)
 )
 
-
+# def __init__(self, img_folder, annotation_file, transform=None
 data_train = dict(
-    dataset=L(MNISTDetectionDataset)(
-        data_dir=get_dataset_dir("mnist_object_detection/train"),
-        is_train=True,
-        transform=L(torchvision.transforms.Compose)(transforms=[
-            L(ToTensor)(),  # ToTensor has to be applied before conversion to anchors.
-            # GroundTruthBoxesToAnchors assigns each ground truth to anchors, required to compute loss in training.
-            L(GroundTruthBoxesToAnchors)(anchors="${anchors}", iou_threshold=0.5),
-        ])
+    dataset=L(TDT4265Dataset)(
+        img_folder=get_dataset_dir("tdt4265_2022/"),
+        annotation_file="data/tdt4265_2022/train_annotations.json",
+        # transform=L(torchvision.transforms.Compose)(transforms=[
+        #     L(ToTensor)(),  # ToTensor has to be applied before conversion to anchors.
+        #     # GroundTruthBoxesToAnchors assigns each ground truth to anchors, required to compute loss in training.
+        #     L(GroundTruthBoxesToAnchors)(anchors="${anchors}", iou_threshold=0.5),])
     ),
     dataloader=L(torch.utils.data.DataLoader)(
         dataset="${..dataset}", num_workers=4, pin_memory=True, shuffle=True, batch_size="${...train.batch_size}", collate_fn=utils.batch_collate,
@@ -80,12 +80,12 @@ data_train = dict(
     ])
 )
 data_val = dict(
-    dataset=L(MNISTDetectionDataset)(
-        data_dir=get_dataset_dir("mnist_object_detection/val"),
-        is_train=False,
-        transform=L(torchvision.transforms.Compose)(transforms=[
-            L(ToTensor)()
-        ])
+    dataset=L(TDT4265Dataset)(
+        img_folder=get_dataset_dir("tdt4265_2022"),
+        annotation_file="data/tdt4265_2022/val_annotations.json",
+        # transform=L(torchvision.transforms.Compose)(transforms=[
+        #     L(ToTensor)()
+        # ])
     ),
     dataloader=L(torch.utils.data.DataLoader)(
         dataset="${..dataset}", num_workers=4, pin_memory=True, shuffle=False, batch_size="${...train.batch_size}", collate_fn=utils.batch_collate_val

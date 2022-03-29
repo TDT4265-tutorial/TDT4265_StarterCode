@@ -23,9 +23,10 @@ def get_dataloader(cfg, dataset_to_visualize):
 
 def analyze_something(dataloader, cfg):
     for batch in tqdm(dataloader):
+        i = 0
         # Remove the two lines below and start analyzing :D
-        print("The keys in the batch are:", batch.keys())
-        exit()
+        # print("The keys in the batch are:", batch.keys())
+        # exit()
 
 
 def main():
