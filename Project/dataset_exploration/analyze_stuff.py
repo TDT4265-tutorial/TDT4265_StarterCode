@@ -3,6 +3,7 @@ from ssd import utils
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
+from tops.torch_utils import set_seed
 
 
 def get_config(config_path):
@@ -32,38 +33,23 @@ def analyze_something(dataloader, cfg):
     num_boxes_per_class = np.empty((N, len(label_map)-1))
     
     #dict_keys(['image', 'boxes', 'labels', 'width', 'height', 'image_id'])
-    
-    for batch in tqdm(dataloader):
-        print("Image ID's:", batch['image_id'])
-        i = 0
-        # Remove the two lines below and start analyzing :D
-        #print("The keys in the batch are:", batch.keys())
-        #print(batch['labels'])
-        #print(batch['labels'].shape[1])
-        #print(batch['labels'])
+    for i, batch in enumerate(tqdm(dataloader)):
         num_boxes_per_class[i, 0] = batch['labels'].shape[1]
         for j in range(1, 8+1):
-            #print("Type:", type(np.array(batch['labels'])))
             num_boxes_per_class[i, j-1] = np.sum(np.array(batch['labels'])==j)
-        
-        i = i+1
-        #if i == 6:
-        #    break
-    
-    plt.figure()
-    temp = np.kron(num_boxes_per_class, np.ones(200))
-    plt.imshow(temp)
-    plt.xticks(range(100, 1600, 200), ['car', 'truck', 'bus', 'motorcycle', 'bicycle', 'scooter', 'person', 'rider'])
     
     plt.figure()
     plt.bar(range(len(classes)), np.sum(num_boxes_per_class, axis=0))
     plt.xticks(range(len(classes)), ['car', 'truck', 'bus', 'motorcycle', 'bicycle', 'scooter', 'person', 'rider'])
+    
+    #plt.yscale('log')
     
     plt.waitforbuttonpress()
     exit()
 
 
 def main():
+    set_seed(42)
     config_path = "configs/tdt4265.py"
     cfg = get_config(config_path)
     dataset_to_analyze = "train"  # or "val"
