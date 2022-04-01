@@ -34,6 +34,7 @@ def analyze_something(dataloader, cfg):
     #dict_keys(['image', 'boxes', 'labels', 'width', 'height', 'image_id'])
     
     for batch in tqdm(dataloader):
+        print("Image ID's:", batch['image_id'])
         i = 0
         # Remove the two lines below and start analyzing :D
         #print("The keys in the batch are:", batch.keys())
