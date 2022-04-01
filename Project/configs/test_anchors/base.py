@@ -19,7 +19,7 @@ from ..tdt4265 import (
 # The config below is copied from the ssd300.py model trained on images of size 300*300.
 # The images in the tdt4265 dataset are of size 128 * 1024, so resizing to 300*300 is probably a bad idea
 # Change the imshape to (128, 1024) and experiment with better prior boxes
-train.imshape = (300, 300)
+train.imshape = (128,1024)
 
 
 anchors = L(AnchorBoxes)(

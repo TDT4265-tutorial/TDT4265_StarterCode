@@ -60,7 +60,7 @@ schedulers = dict(
     multistep=L(MultiStepLR)(milestones=[], gamma=0.1)
 )
 
-# def __init__(self, img_folder, annotation_file, transform=None
+
 data_train = dict(
     dataset=L(TDT4265Dataset)(
         img_folder=get_dataset_dir("tdt4265_2022/"),

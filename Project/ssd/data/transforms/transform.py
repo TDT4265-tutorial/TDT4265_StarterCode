@@ -186,3 +186,4 @@ class Resize(torch.nn.Module):
     def forward(self, batch):
         batch["image"] = torchvision.transforms.functional.resize(batch["image"], self.imshape, antialias=True)
         return batch
+
