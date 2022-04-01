@@ -25,27 +25,30 @@ def get_dataloader(cfg, dataset_to_visualize):
 
 
 def analyze_something(dataloader, cfg):
-    i = 0
     N = len(dataloader)
     label_map = {0: 'background', 1: 'car', 2: 'truck', 3: 'bus', 4: 'motorcycle', 5: 'bicycle', 6: 'scooter', 7: 'person', 8: 'rider'}
-    classes = list(label_map.values())[1:]
-    print(classes)
+    classes = list(label_map.values())[1:]  # Drop background
     num_boxes_per_class = np.empty((N, len(label_map)-1))
     
-    #dict_keys(['image', 'boxes', 'labels', 'width', 'height', 'image_id'])
     for i, batch in enumerate(tqdm(dataloader)):
-        num_boxes_per_class[i, 0] = batch['labels'].shape[1]
         for j in range(1, 8+1):
             num_boxes_per_class[i, j-1] = np.sum(np.array(batch['labels'])==j)
     
     plt.figure()
-    plt.bar(range(len(classes)), np.sum(num_boxes_per_class, axis=0))
-    plt.xticks(range(len(classes)), ['car', 'truck', 'bus', 'motorcycle', 'bicycle', 'scooter', 'person', 'rider'])
+    bars = plt.bar(range(len(classes)), np.sum(num_boxes_per_class, axis=0))
+    bar_height_max = 0
+    for bar in bars:
+        height = bar.get_height()
+        if height > bar_height_max: bar_height_max = height
+        plt.text(bar.get_x() + bar.get_width()/2., height+10,
+                '%d' % int(height),
+                ha='center', va='bottom')
     
-    #plt.yscale('log')
+    plt.xticks(range(len(classes)), ['car', 'truck', 'bus', 'motorcycle', 'bicycle', 'scooter', 'person', 'rider'])
+    plt.ylabel("Number of boxes")
+    plt.ylim(0, bar_height_max*1.1)
     
     plt.waitforbuttonpress()
-    exit()
 
 
 def main():
