@@ -28,25 +28,14 @@ def analyze_boxes(dataloader, cfg):
     N = len(dataloader)
     label_map = {0: 'background', 1: 'car', 2: 'truck', 3: 'bus', 4: 'motorcycle', 5: 'bicycle', 6: 'scooter', 7: 'person', 8: 'rider'}
     classes = list(label_map.values())[1:]
+    
     box_size_per_class = np.empty(len(classes))
     num_boxes_per_class = np.zeros((N, len(label_map)-1))
-    a = True
+
     #dict_keys(['image', 'boxes', 'labels', 'width', 'height', 'image_id'])
     for i, batch in enumerate(tqdm(dataloader)):
-        # if batch['image_id'].item() < 500 and a == True:
-        #     print(batch['labels'])
-        #     print(batch['boxes'])
-        #     print(batch['image_id'])
-        #     a = False
-
         for k, box in enumerate(batch['boxes'][0]):
-            # print("BATCH", batch['boxes'][0])
-            # print("BOX:", box)
-            # print("TEST", box[2])
-            # print("aaaaaaaaaaaaaaaa", batch["labels"])
             box_size = (box[2] - box[0])*batch['width'] * (box[3] - box[1])*batch['height']
-            # print("key:", np.array(batch['labels'][0]))
-            # print("key:", batch['labels'][0][k])
             box_size_per_class[batch['labels'][0][k]-1] += box_size
 
         for j in range(1, 8+1):
@@ -54,16 +43,22 @@ def analyze_boxes(dataloader, cfg):
 
     boxes_per_class = np.sum(num_boxes_per_class, axis=0)
     box_size_per_class /= np.where(boxes_per_class==0, 1, boxes_per_class)
-    print(box_size_per_class)
 
     plt.figure()
-    plt.bar(range(len(classes)), box_size_per_class)
-    plt.xticks(range(len(classes)), classes)
+    bars = plt.bar(range(len(classes)), box_size_per_class)
+    bar_height_max = 0
+    for bar in bars:
+        height = bar.get_height()
+        if height > bar_height_max: bar_height_max = height
+        plt.text(bar.get_x() + bar.get_width()/2., height+10,
+                '%d' % int(height),
+                ha='center', va='bottom')
     
-    #plt.yscale('log')
+    plt.xticks(range(len(classes)), classes)
+    plt.ylabel("Avereage box size")
+    plt.ylim(0, bar_height_max*1.1)
     
     plt.waitforbuttonpress()
-    exit()
 
 
 def main():
