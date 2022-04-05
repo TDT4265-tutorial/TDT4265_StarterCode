@@ -16,8 +16,7 @@ from .tdt4265 import (
 from tops.config import LazyCall as L
 from ssd.modeling.backbones import FPN
 
-backbone = L(FPN)(type="resnet34",
+backbone = L(FPN)(resnet_variant="resnet34",
                   pretrained=True,
-                  output_channels=[64, 128, 256, 512, 256, 64],
-                  image_channels="${train.image_channels}",
+                  fpn_out_channels = 256,
                   output_feature_sizes="${anchors.feature_sizes}")
