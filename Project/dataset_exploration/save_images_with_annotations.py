@@ -86,7 +86,7 @@ def save_images_with_annotations(dataloader, cfg, save_folder, num_images_to_vis
 
 
 def main():
-    config_path = "configs/tdt4265.py"
+    config_path = "configs/task2_2.py"
     cfg = get_config(config_path)
     dataset_to_visualize = "train"  # or "val"
     num_images_to_visualize = 500  # Increase this if you want to save more images
