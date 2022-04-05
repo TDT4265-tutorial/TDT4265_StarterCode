@@ -190,32 +190,44 @@ class Resize(torch.nn.Module):
 
 class RandomContrast(torch.nn.Module):
 
-    def __init__(self, lower=0.5, upper=2, p=0.3) -> None:
+    def __init__(self, lower=0.5, upper=2, p=0.1) -> None:
         super().__init__()
         self.lower = lower
         self.upper = upper
         self.p = p
 
-    def __call__(self, image):
+    def __call__(self, batch):
         if np.random.uniform() < self.p:
             contrast_factor = random.uniform(self.lower, self.upper)
-            image = torchvision.transforms.functional.adjust_contrast(image, contrast_factor)
-        return image  
+            batch["image"] = torchvision.transforms.functional.adjust_contrast(batch["image"], contrast_factor)
+        return batch  
 
 
 class RandomBrightness(torch.nn.Module):
 
-    def __init__(self, lower=0.5, upper=2, p=0.3) -> None:
+    def __init__(self, lower=0.5, upper=2, p=0.1) -> None:
         super().__init__()
         self.lower = lower
         self.upper = upper
         self.p = p
 
-    def __call__(self, image):
+    def __call__(self, batch):
         if np.random.uniform() < self.p:
             brightness_factor = random.uniform(self.lower, self.upper)
-            image = torchvision.transforms.functional.adjust_brightness(image, brightness_factor)
-        return image  
+            batch["image"] = torchvision.transforms.functional.adjust_brightness(batch["image"], brightness_factor)
+        return batch  
+
+
+# class Dropout(torch.nn.Module):
+
+#     def __init__(self, p=0.1) -> None:
+#         super().__init__()
+#         self.p = p
+
+#     def __call__(self, batch):
+#         if np.random.uniform() < self.p:
+#             batch["image"] = torch.nn.Dropout(batch["image"])
+#         return batch  
 
 
 
