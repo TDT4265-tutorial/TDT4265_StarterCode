@@ -77,7 +77,7 @@ class AnchorEncoder(object):
         # filter IoU > 0.5
         masks = best_target_per_anchor > iou_threshold
         labels_out = torch.zeros(self.nboxes, dtype=torch.long)
-        labels_out[masks] = labels_in[best_target_per_anchor_idx[masks]]
+        labels_out[masks] = labels_in[best_target_per_anchor_idx[masks]].long()
         bboxes_out = self.anchors.clone()
         bboxes_out[masks, :] = bboxes_in[best_target_per_anchor_idx[masks], :]
         # Transform format to xywh format
