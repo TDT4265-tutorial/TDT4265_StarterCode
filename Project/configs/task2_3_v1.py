@@ -20,3 +20,6 @@ backbone = L(FPN)(resnet_variant="resnet18",
                   pretrained=True,
                   fpn_out_channels = 256,
                   output_feature_sizes="${anchors.feature_sizes}")
+
+
+""" This code has just the FPN implementation. Nothing is done wrt loss function or optimizer.  There is also no data augmentation."""
