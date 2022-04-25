@@ -175,6 +175,8 @@ class FPN(nn.Module):
         
         out_features = self.fpn(pyramid).values()
         
+        #feature_thingy_2(out_features)
+        
         for idx, feature in enumerate(out_features):
             out_channel = self.out_channels[idx]
             h, w = self.output_feature_shape[idx]
