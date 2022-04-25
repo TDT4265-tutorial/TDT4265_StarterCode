@@ -1,9 +1,9 @@
-from ssd.modeling import backbones
+from math import gamma
+from ssd.modeling import backbones, SSDFocalLoss
 from .tdt4265 import (
     train,
     optimizer,
     schedulers,
-    loss_objective,
     model,
     data_train,
     data_val,
@@ -21,5 +21,6 @@ backbone = L(FPN)(resnet_variant="resnet18",
                   fpn_out_channels = 256,
                   output_feature_sizes="${anchors.feature_sizes}")
 
+loss_objective = L(SSDFocalLoss)(anchors="${anchors}", gamma=2)
 
 """ This code has just the FPN implementation. Nothing is done wrt loss function or optimizer.  There is also no data augmentation."""
