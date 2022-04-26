@@ -66,22 +66,25 @@ class SSDFocalLoss(nn.Module):
         batch_size, num_classes, num_anchors = confs.shape
         alpha = torch.ones(num_classes)
         alpha[0] = 0.01
+        alpha = alpha.view(1, -1, 1)
         
         gt_bbox = gt_bbox.transpose(1, 2).contiguous() # reshape to [batch_size, 4, num_anchors]
         with torch.no_grad():
             p_k = F.softmax(confs, dim=1)
             log_p_k = F.log_softmax(confs, dim=1)
             y_k = F.one_hot(gt_labels, num_classes).transpose(1, 2)
-            print("Shapes:")
-            print("pk     ", p_k.shape)
-            print("log_pk ", log_p_k.shape)
-            print("yk     ", y_k.shape)
-            print("alpha  ", alpha.shape)
-            focal_loss = - alpha @ ((1-p_k) ** self.gamma) @ y_k @ log_p_k
-            
-            #mask = hard_negative_mining(to_log, gt_labels, 3.0)
-        #classification_loss = F.cross_entropy(confs, gt_labels, reduction="none")
-        #classification_loss = classification_loss[mask].sum()
+
+            # print("shapes of alpha pk, log pk, yk and focal loss")
+            # print(alpha.shape)
+            # print(p_k.shape)
+            # print(log_p_k.shape)
+            # print(y_k.shape)
+
+            weight = torch.pow(1. - p_k, self.gamma)
+            focal = -alpha * weight * log_p_k
+            loss_tmp = torch.sum(y_k * focal, dim=1)
+            focal_loss = torch.sum(loss_tmp)
+
 
         pos_mask = (gt_labels > 0).unsqueeze(1).repeat(1, 4, 1)
         bbox_delta = bbox_delta[pos_mask]
