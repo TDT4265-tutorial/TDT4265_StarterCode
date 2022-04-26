@@ -69,9 +69,14 @@ class SSDFocalLoss(nn.Module):
         
         gt_bbox = gt_bbox.transpose(1, 2).contiguous() # reshape to [batch_size, 4, num_anchors]
         with torch.no_grad():
-            p_k = F.softmax(confs, dim=1)[:, 0]
-            log_p_k = F.log_softmax(confs, dim=1)[:, 0]
-            y_k = F.one_hot(gt_labels, num_classes)
+            p_k = F.softmax(confs, dim=1)
+            log_p_k = F.log_softmax(confs, dim=1)
+            y_k = F.one_hot(gt_labels, num_classes).transpose(1, 2)
+            print("Shapes:")
+            print("pk     ", p_k.shape)
+            print("log_pk ", log_p_k.shape)
+            print("yk     ", y_k.shape)
+            print("alpha  ", alpha.shape)
             focal_loss = - alpha @ ((1-p_k) ** self.gamma) @ y_k @ log_p_k
             
             #mask = hard_negative_mining(to_log, gt_labels, 3.0)
