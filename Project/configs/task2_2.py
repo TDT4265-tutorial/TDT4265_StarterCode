@@ -31,7 +31,7 @@ val_cpu_transform = L(torchvision.transforms.Compose)(transforms=[
 gpu_transform = L(torchvision.transforms.Compose)(transforms=[
     L(RandomContrast)(),
     L(RandomBrightness)(),
-    L(GaussianBlur)(),
+    L(GaussianBlur)(imshape="${train.imshape}"),
     L(Normalize)(mean=[0.4765, 0.4774, 0.2259], std=[0.2951, 0.2864, 0.2878])
 ])
 data_train.dataset = L(TDT4265Dataset)(

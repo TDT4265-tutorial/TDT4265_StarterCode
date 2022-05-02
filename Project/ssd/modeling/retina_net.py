@@ -38,7 +38,6 @@ class RetinaNet(nn.Module):
             nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
             nn.Conv2d(self.C, self.K*self.A, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True)
         )
         
         self.regression_heads = nn.Sequential(
@@ -51,7 +50,6 @@ class RetinaNet(nn.Module):
             nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
             nn.Conv2d(self.C, 4*self.A, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True)
         )
     
         self.anchor_encoder = AnchorEncoder(anchors)
@@ -72,7 +70,7 @@ class RetinaNet(nn.Module):
             # Extracting last layer of classification heads
             module_children = list(self.classification_heads.children())
             # Extracting the last convolutional layer
-            conv_layer = list(module_children[-2].named_parameters())
+            conv_layer = list(module_children[-1].named_parameters())
 
             bias = conv_layer[1]
             biasArray = torch.zeros(self.K)
