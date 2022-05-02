@@ -47,7 +47,7 @@ def train_epoch(
         # torch.cuda.amp skips gradient steps if backward pass produces NaNs/infs.
         # If it happens in the first iteration, scheduler.step() will throw exception
         logger.step()
-
+        # print("grad scale: ",grad_scale)
     return
 
 

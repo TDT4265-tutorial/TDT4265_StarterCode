@@ -58,7 +58,8 @@ def analyze_boxes(dataloader, cfg):
     plt.ylabel("Avereage box size")
     plt.ylim(0, bar_height_max*1.1)
     
-    plt.waitforbuttonpress()
+    # plt.waitforbuttonpress()
+    plt.savefig("dataset_exploration/boxes.png")
 
 
 def main():

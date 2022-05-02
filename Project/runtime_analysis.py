@@ -32,6 +32,7 @@ def evaluation(cfg, N_images: int):
     total_time = time.time() - start_time
     print("Runtime for image shape:", imshape)
     print("Total runtime:", total_time)
+    print("Number of images:", N_images)
     print("FPS:", N_images / total_time)
 
 @click.command()

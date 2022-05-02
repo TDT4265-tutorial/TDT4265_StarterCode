@@ -4,7 +4,7 @@ from .anchor_encoder import AnchorEncoder
 from torchvision.ops import batched_nms
 
 
-class SSD300(nn.Module):
+class RetinaNet(nn.Module):
     def __init__(self, 
             feature_extractor: nn.Module,
             anchors,
@@ -13,7 +13,7 @@ class SSD300(nn.Module):
             anchor_prob_initialization: bool = True):
         super().__init__()
         """
-            Implements the SSD network.
+            Implements the RetinaNet network, based on SSD.
             Backbone outputs a list of features, which are gressed to SSD output with regression/classification heads.
         """
 
@@ -21,65 +21,83 @@ class SSD300(nn.Module):
         self.loss_func = loss_objective
         self.num_classes = num_classes
         self.anchor_prob_initialization = anchor_prob_initialization
-        self.regression_heads = []
-        self.classification_heads = []
-
+        
         # Notation from "Focal Loss for Dense Object Detection"
-        # self.A = anchors.num_boxes_per_fmap[0]           # Num anchors at each feature map
-        # self.K = self.num_classes                        # Number of classes
-        # self.C = self.feature_extractor.fpn_out_channels # Number of channels per feature map
+        self.A = anchors.num_boxes_per_fmap[0]           # Num anchors at each feature map
+        self.K = self.num_classes                        # Number of classes
+        self.C = self.feature_extractor.fpn_out_channels # Number of channels per feature map
 
         # Initialize output heads that are applied to each feature map from the backbone.
-        for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
-            self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
-            self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
-
-        self.regression_heads = nn.ModuleList(self.regression_heads)
-        self.classification_heads = nn.ModuleList(self.classification_heads)
+        self.classification_heads = nn.Sequential(
+            nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(self.C, self.K*self.A, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True)
+        )
+        
+        self.regression_heads = nn.Sequential(
+            nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(self.C, self.C, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(self.C, 4*self.A, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True)
+        )
+    
         self.anchor_encoder = AnchorEncoder(anchors)
         self._init_weights()
 
     def _init_weights(self):
-        # if self.anchor_prob_initialization:
-        #     layers = [*self.regression_heads, *self.classification_heads]
-        #     for layer in layers:
-        #         for param in layer.parameters():
-        #             # Sorting out the weights
-        #             if param.dim() > 1: 
-        #                 nn.init.normal_(param, 0, 0.01)
-        #             # Sorting out the biases
-        #             else:
-        #                 nn.init.zeros_(param)
-
-        #     # Extracting last layer of classification heads
-        #     module_children = list(self.classification_heads.children())
-        #     # Extracting the last convolutional layer
-        #     conv_layer = list(module_children[-2].named_parameters())
-
-        #     bias = conv_layer[1]
-        #     biasArray = torch.zeros(self.K*self.A)
-        #     p = 0.99
-        #     b = torch.log(torch.tensor(p*((self.K-1)/(1-p))))
-        #     biasArray[:self.A] = b
-        #     bias[1].data = biasArray
-        # else:
+        if self.anchor_prob_initialization:
             layers = [*self.regression_heads, *self.classification_heads]
             for layer in layers:
                 for param in layer.parameters():
+                    # Sorting out the weights
+                    if param.dim() > 1: 
+                        nn.init.normal_(param, 0, 0.01)
+                    # Sorting out the biases
+                    else:
+                        nn.init.zeros_(param)
+
+            # Extracting last layer of classification heads
+            module_children = list(self.classification_heads.children())
+            # Extracting the last convolutional layer
+            conv_layer = list(module_children[-2].named_parameters())
+
+            bias = conv_layer[1]
+            biasArray = torch.zeros(self.K)
+            p = 0.99
+            b = torch.log(torch.tensor(p*((self.K-1)/(1-p))))
+            biasArray[0] = b
+            biasArray = biasArray.repeat(self.A)
+            bias[1].data = biasArray
+        else:
+            layers = [self.regression_heads, self.classification_heads]
+            for layer in layers:
+                for param in layer.parameters():
                     if param.dim() > 1: nn.init.xavier_uniform_(param)
-        
+
     def regress_boxes(self, features):
         locations = []
         confidences = []
-        for idx, x in enumerate(features):
-            bbox_delta = self.regression_heads[idx](x).view(x.shape[0], 4, -1)
-            bbox_conf = self.classification_heads[idx](x).view(x.shape[0], self.num_classes, -1)
+        for x in features:
+            bbox_delta = self.regression_heads(x).view(x.shape[0], 4, -1)
+            bbox_conf = self.classification_heads(x).view(x.shape[0], self.num_classes, -1)
             locations.append(bbox_delta)
             confidences.append(bbox_conf)
         bbox_delta = torch.cat(locations, 2).contiguous()
         confidences = torch.cat(confidences, 2).contiguous()
         return bbox_delta, confidences
-
     
     def forward(self, img: torch.Tensor, **kwargs):
         """

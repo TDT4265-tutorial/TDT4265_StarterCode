@@ -59,12 +59,13 @@ def analyze_something(dataloader, cfg):
         cv2.imshow(f'{class_label}{i}', image)
     
     cv2.waitKey()
-        
+    
         
     
     plt.figure()
     
-    plt.waitforbuttonpress()
+    # plt.waitforbuttonpress()
+    plt.savefig("dataset_exploration/class_boxes.png")
 
 
 def main():

@@ -48,7 +48,8 @@ def analyze_something(dataloader, cfg):
     plt.ylabel("Number of boxes")
     plt.ylim(0, bar_height_max*1.1)
     
-    plt.waitforbuttonpress()
+    # plt.waitforbuttonpress()
+    plt.savefig("dataset_exploration/distribution.png")
 
 
 def main():

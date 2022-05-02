@@ -36,8 +36,8 @@ def analyze_boxes(dataloader, cfg):
     bins = np.array(range(0, 70)) / 10.0
     x = np.bincount(np.digitize(aspect_ratios, bins))[1:]
 
-    print(bins)
-    print(x)
+    # print(bins)
+    # print(x)
 
     plt.figure()
     plt.bar(bins, x, width=0.1)
@@ -45,7 +45,8 @@ def analyze_boxes(dataloader, cfg):
     plt.xlabel("Aspect Ratios")
     plt.ylabel("Count")
     
-    plt.waitforbuttonpress()
+    # plt.waitforbuttonpress()
+    plt.savefig("dataset_exploration/aspect_ratios.png")
 
 
 def main():
